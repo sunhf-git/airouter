@@ -45,17 +45,6 @@ export default async function onRequest(context) {
     apiPath = path.replace("/p/groq", "");
   }
 
-  if (path.startsWith("/p/debug/headers")) {
-    const headers = {};
-    for (const [k, v] of request.headers.entries()) {
-      headers[k] = v;
-    }
-    return new Response(
-      JSON.stringify({ headers, url: request.url, method: request.method }, null, 2),
-      { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
-    );
-  }
-
   if (!provider) {
     return new Response(
       JSON.stringify({

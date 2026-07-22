@@ -90,7 +90,6 @@ async function handler(req: Request): Promise<Response> {
       const targetUrlObj = new URL(targetUrl);
       targetUrlObj.searchParams.set("key", apiKey);
       targetUrl = targetUrlObj.toString();
-      requestHeaders.delete("Authorization");
     }
   }
 
