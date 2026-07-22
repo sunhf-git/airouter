@@ -1,13 +1,13 @@
 {
   "name": "airouter",
   "version": "1.0.0",
-  "description": "Cloudflare Worker reverse proxy for NVIDIA NIM, Google AI, and Groq APIs",
+  "description": "AI API reverse proxy (Vercel Edge Functions)",
   "scripts": {
-    "deploy": "wrangler deploy",
-    "dev": "wrangler dev",
+    "deploy": "vercel deploy --prod",
+    "dev": "vercel dev",
     "build": "echo 'Build completed'"
   },
   "devDependencies": {
-    "wrangler": "^3.0.0"
+    "vercel": "^35.0.0"
   }
 }
