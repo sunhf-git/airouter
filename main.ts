@@ -1,5 +1,3 @@
-import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
-
 const API_CONFIG: Record<string, { baseUrl: string; authHeader: string }> = {
   nvidia: {
     baseUrl: "https://integrate.api.nvidia.com",
@@ -23,7 +21,7 @@ const corsHeaders = {
   "Timing-Allow-Origin": "*",
 };
 
-async function handler(req: Request): Promise<Response> {
+export default async function handler(req: Request): Promise<Response> {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -152,5 +150,3 @@ async function handler(req: Request): Promise<Response> {
     );
   }
 }
-
-serve(handler);
