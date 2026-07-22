@@ -21,7 +21,7 @@ const corsHeaders = {
   "Timing-Allow-Origin": "*",
 };
 
-export async function onRequest(context) {
+export default async function onRequest(context) {
   const { request } = context;
   
   if (request.method === "OPTIONS") {
@@ -29,31 +29,31 @@ export async function onRequest(context) {
   }
 
   const url = new URL(request.url);
-  const path = url.pathname.replace("/api/proxy", "");
+  const path = url.pathname;
 
   let provider = "";
   let apiPath = "";
 
-  if (path.startsWith("/nvidia/")) {
+  if (path.startsWith("/p/nvidia/")) {
     provider = "nvidia";
-    apiPath = path.replace("/nvidia", "");
-  } else if (path.startsWith("/google/")) {
+    apiPath = path.replace("/p/nvidia", "");
+  } else if (path.startsWith("/p/google/")) {
     provider = "google";
-    apiPath = path.replace("/google", "");
-  } else if (path.startsWith("/groq/")) {
+    apiPath = path.replace("/p/google", "");
+  } else if (path.startsWith("/p/groq/")) {
     provider = "groq";
-    apiPath = path.replace("/groq", "");
+    apiPath = path.replace("/p/groq", "");
   }
 
   if (!provider) {
     return new Response(
       JSON.stringify({
         error: "Unknown route",
-        message: "Use /api/proxy/nvidia/, /api/proxy/google/, or /api/proxy/groq/ prefix",
+        message: "Use /p/nvidia/, /p/google/, or /p/groq/ prefix",
         available_endpoints: {
-          nvidia: "/api/proxy/nvidia/*",
-          google: "/api/proxy/google/*",
-          groq: "/api/proxy/groq/*",
+          nvidia: "/p/nvidia/*",
+          google: "/p/google/*",
+          groq: "/p/groq/*",
         },
       }),
       { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
@@ -109,15 +109,17 @@ export async function onRequest(context) {
     );
   }
 
-  const modifiedRequest = new Request(targetUrl, {
+  const fetchInit = {
     method: request.method,
     headers: requestHeaders,
-    body: request.body,
     redirect: "follow",
-  });
+  };
+  if (request.method !== "GET" && request.method !== "HEAD") {
+    fetchInit.body = await request.arrayBuffer();
+  }
 
   try {
-    const response = await fetch(modifiedRequest);
+    const response = await fetch(targetUrl, fetchInit);
     const responseHeaders = new Headers(response.headers);
 
     responseHeaders.set("Access-Control-Allow-Origin", "*");

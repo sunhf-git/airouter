@@ -21,13 +21,15 @@ const corsHeaders = {
   "Timing-Allow-Origin": "*",
 };
 
-async function handleRequest(req) {
-  if (req.method === "OPTIONS") {
+export async function onRequest(context) {
+  const { request } = context;
+
+  if (request.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const url = new URL(req.url);
-  const path = url.pathname;
+  const url = new URL(request.url);
+  const path = url.pathname.replace(/^\/api\/proxy/, "");
 
   let provider = "";
   let apiPath = "";
@@ -47,11 +49,11 @@ async function handleRequest(req) {
     return new Response(
       JSON.stringify({
         error: "Unknown route",
-        message: "Use /nvidia/, /google/, or /groq/ prefix",
+        message: "Use /api/proxy/nvidia/, /api/proxy/google/, or /api/proxy/groq/ prefix",
         available_endpoints: {
-          nvidia: "/nvidia/*",
-          google: "/google/*",
-          groq: "/groq/*",
+          nvidia: "/api/proxy/nvidia/*",
+          google: "/api/proxy/google/*",
+          groq: "/api/proxy/groq/*",
         },
       }),
       { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
@@ -61,7 +63,7 @@ async function handleRequest(req) {
   const config = API_CONFIG[provider];
   let targetUrl = `${config.baseUrl}${apiPath}${url.search}`;
 
-  const requestHeaders = new Headers(req.headers);
+  const requestHeaders = new Headers(request.headers);
   requestHeaders.delete("Host");
   requestHeaders.delete("Origin");
   requestHeaders.delete("Referer");
@@ -108,12 +110,12 @@ async function handleRequest(req) {
   }
 
   const fetchInit = {
-    method: req.method,
+    method: request.method,
     headers: requestHeaders,
     redirect: "follow",
   };
-  if (req.method !== "GET" && req.method !== "HEAD") {
-    fetchInit.body = await req.arrayBuffer();
+  if (request.method !== "GET" && request.method !== "HEAD") {
+    fetchInit.body = await request.arrayBuffer();
   }
 
   try {
@@ -151,7 +153,3 @@ async function handleRequest(req) {
     );
   }
 }
-
-addEventListener("fetch", (event) => {
-  event.respondWith(handleRequest(event.request));
-});

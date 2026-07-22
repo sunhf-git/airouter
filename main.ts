@@ -107,15 +107,17 @@ async function handler(req: Request): Promise<Response> {
     );
   }
 
-  const modifiedRequest = new Request(targetUrl, {
+  const fetchInit: RequestInit = {
     method: req.method,
     headers: requestHeaders,
-    body: req.body,
     redirect: "follow",
-  });
+  };
+  if (req.method !== "GET" && req.method !== "HEAD") {
+    fetchInit.body = await req.arrayBuffer();
+  }
 
   try {
-    const response = await fetch(modifiedRequest);
+    const response = await fetch(targetUrl, fetchInit);
     const responseHeaders = new Headers(response.headers);
 
     responseHeaders.set("Access-Control-Allow-Origin", "*");

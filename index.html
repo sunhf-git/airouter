@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OpenAI Router Proxy</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 800px; margin: 0 auto; padding: 2rem; }
+    h1 { color: #1a73e8; }
+    code { background: #f1f3f4; padding: 0.2em 0.4em; border-radius: 4px; }
+    .endpoint { margin: 1rem 0; padding: 1rem; background: #f8f9fa; border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <h1>OpenAI Router Proxy</h1>
+  <p>API 反代服务已部署成功！</p>
+  
+  <div class="endpoint">
+    <strong>NVIDIA:</strong>
+    <code>POST /p/nvidia/*</code>
+  </div>
+  
+  <div class="endpoint">
+    <strong>Google:</strong>
+    <code>POST /p/google/*</code>
+  </div>
+  
+  <div class="endpoint">
+    <strong>Groq:</strong>
+    <code>POST /p/groq/*</code>
+  </div>
+</body>
+</html>

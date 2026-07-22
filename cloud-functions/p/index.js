@@ -21,13 +21,15 @@ const corsHeaders = {
   "Timing-Allow-Origin": "*",
 };
 
-async function handleRequest(req) {
-  if (req.method === "OPTIONS") {
+export default async function onRequest(context) {
+  const { request } = context;
+  
+  if (request.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const url = new URL(req.url);
-  const path = url.pathname;
+  const url = new URL(request.url);
+  const path = url.pathname.replace("/p", "");
 
   let provider = "";
   let apiPath = "";
@@ -47,11 +49,11 @@ async function handleRequest(req) {
     return new Response(
       JSON.stringify({
         error: "Unknown route",
-        message: "Use /nvidia/, /google/, or /groq/ prefix",
+        message: "Use /p/nvidia/, /p/google/, or /p/groq/ prefix",
         available_endpoints: {
-          nvidia: "/nvidia/*",
-          google: "/google/*",
-          groq: "/groq/*",
+          nvidia: "/p/nvidia/*",
+          google: "/p/google/*",
+          groq: "/p/groq/*",
         },
       }),
       { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
@@ -61,7 +63,7 @@ async function handleRequest(req) {
   const config = API_CONFIG[provider];
   let targetUrl = `${config.baseUrl}${apiPath}${url.search}`;
 
-  const requestHeaders = new Headers(req.headers);
+  const requestHeaders = new Headers(request.headers);
   requestHeaders.delete("Host");
   requestHeaders.delete("Origin");
   requestHeaders.delete("Referer");
@@ -107,17 +109,15 @@ async function handleRequest(req) {
     );
   }
 
-  const fetchInit = {
-    method: req.method,
+  const modifiedRequest = new Request(targetUrl, {
+    method: request.method,
     headers: requestHeaders,
+    body: request.body,
     redirect: "follow",
-  };
-  if (req.method !== "GET" && req.method !== "HEAD") {
-    fetchInit.body = await req.arrayBuffer();
-  }
+  });
 
   try {
-    const response = await fetch(targetUrl, fetchInit);
+    const response = await fetch(modifiedRequest);
     const responseHeaders = new Headers(response.headers);
 
     responseHeaders.set("Access-Control-Allow-Origin", "*");
@@ -151,7 +151,3 @@ async function handleRequest(req) {
     );
   }
 }
-
-addEventListener("fetch", (event) => {
-  event.respondWith(handleRequest(event.request));
-});
