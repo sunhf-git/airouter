@@ -1,5 +1,0 @@
-{
-  "rewrites": [
-    { "source": "/(nvidia|google|groq)/(.*)", "destination": "/api/proxy" }
-  ]
-}

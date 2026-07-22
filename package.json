@@ -1,13 +1,5 @@
 {
   "name": "airouter",
   "version": "1.0.0",
-  "description": "AI API reverse proxy (Vercel Edge Functions)",
-  "scripts": {
-    "deploy": "vercel deploy --prod",
-    "dev": "vercel dev",
-    "build": "echo 'Build completed'"
-  },
-  "devDependencies": {
-    "vercel": "^35.0.0"
-  }
+  "description": "AI API reverse proxy"
 }
