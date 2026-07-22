@@ -60,7 +60,7 @@ export default {
     }
 
     const config = API_CONFIG[provider];
-    const targetUrl = `${config.baseUrl}${apiPath}${url.search}`;
+    let targetUrl = `${config.baseUrl}${apiPath}${url.search}`;
 
     const requestHeaders = new Headers(request.headers);
     requestHeaders.delete("Host");
