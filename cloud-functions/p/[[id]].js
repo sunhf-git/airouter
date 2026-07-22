@@ -45,6 +45,17 @@ export default async function onRequest(context) {
     apiPath = path.replace("/p/groq", "");
   }
 
+  if (path.startsWith("/p/debug/headers")) {
+    const headers = {};
+    for (const [k, v] of request.headers.entries()) {
+      headers[k] = v;
+    }
+    return new Response(
+      JSON.stringify({ headers, url: request.url, method: request.method }, null, 2),
+      { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
+    );
+  }
+
   if (!provider) {
     return new Response(
       JSON.stringify({
@@ -76,11 +87,24 @@ export default async function onRequest(context) {
   if (requestHeaders.get("X-Goog-Api-Key") && provider === "google") {
     const apiKey = requestHeaders.get("X-Goog-Api-Key");
     if (!url.searchParams.has("key")) {
+      url.searchParams.set("key", apiKey);
       const targetUrlObj = new URL(targetUrl);
       targetUrlObj.searchParams.set("key", apiKey);
       targetUrl = targetUrlObj.toString();
     }
     requestHeaders.delete("X-Goog-Api-Key");
+  }
+
+  if (provider === "google") {
+    const authHeader = requestHeaders.get("Authorization");
+    if (authHeader && authHeader.startsWith("Bearer ") && !url.searchParams.has("key")) {
+      const apiKey = authHeader.slice(7);
+      url.searchParams.set("key", apiKey);
+      const targetUrlObj = new URL(targetUrl);
+      targetUrlObj.searchParams.set("key", apiKey);
+      targetUrl = targetUrlObj.toString();
+      requestHeaders.delete("Authorization");
+    }
   }
 
   if (requestHeaders.get("X-Groq-Api-Key") && provider === "groq") {
@@ -95,9 +119,9 @@ export default async function onRequest(context) {
     );
   }
 
-  if (provider === "google" && !url.searchParams.has("key") && !requestHeaders.get("X-Goog-Api-Key")) {
+  if (provider === "google" && !url.searchParams.has("key")) {
     return new Response(
-      JSON.stringify({ error: "Missing Google API key. Use X-Goog-Api-Key header or ?key= parameter" }),
+      JSON.stringify({ error: "Missing Google API key. Use Authorization header, X-Goog-Api-Key header, or ?key= parameter" }),
       { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   }
